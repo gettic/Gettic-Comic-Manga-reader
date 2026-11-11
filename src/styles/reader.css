@@ -68,6 +68,70 @@
   animation: fade 0.15s ease-out;
 }
 
+/* ---------- book ---------- */
+.spread.book .pg {
+  box-shadow: 0 12px 44px rgba(0, 0, 0, 0.5);
+  background: #f6f1e7;
+}
+
+.spread.book .pg.spacer {
+  box-shadow: none;
+  background: transparent;
+}
+
+/* Gutter shading toward the spine, over the page image. */
+.spread.book .pg:not(.spacer)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.spread.book .pg[data-vis="l"]:not(.spacer)::after {
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.26), rgba(0, 0, 0, 0.07) 4%, rgba(0, 0, 0, 0) 12%);
+}
+
+.spread.book .pg[data-vis="r"]:not(.spacer)::after {
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.08) 4%, rgba(0, 0, 0, 0) 12%);
+}
+
+/* Darkening while a page turns (set by the flip as --shade). */
+.spread.book .pg:not(.spacer)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: #000;
+  opacity: var(--shade, 0);
+  pointer-events: none;
+}
+
+.spread.book .pg.flipping {
+  z-index: 3;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Page-edge stacks: thickness shows pages read / still to come. */
+.spread .edge {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.spread .edge.l {
+  right: 100%;
+  border-radius: 3px 0 0 3px;
+  background: repeating-linear-gradient(to right, #d9d2c3 0 1px, #efe9dc 1px 2px);
+}
+
+.spread .edge.r {
+  left: 100%;
+  border-radius: 0 3px 3px 0;
+  background: repeating-linear-gradient(to right, #efe9dc 0 1px, #d9d2c3 1px 2px);
+}
+
 .broken {
   display: flex;
   flex-direction: column;

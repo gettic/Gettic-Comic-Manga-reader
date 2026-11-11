@@ -23,6 +23,7 @@ describe("key map", () => {
     expect(commandForKey({ key: "?", shiftKey: true })).toBe("help");
     expect(commandForKey({ key: "+", shiftKey: true })).toBe("zoomIn");
     expect(keyName({ key: "D" })).toBe("d");
+    expect(commandForKey({ key: "4" })).toBe("layoutBook");
   });
 
   it("unknown keys do nothing", () => {

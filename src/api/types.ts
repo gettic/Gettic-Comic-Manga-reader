@@ -36,7 +36,7 @@ export interface CoreError {
   message: string;
 }
 
-export type Layout = "single" | "double" | "strip";
+export type Layout = "single" | "double" | "book" | "strip";
 export type Direction = "ltr" | "rtl";
 export type Fit = "width" | "height" | "page" | "original";
 
@@ -52,6 +52,7 @@ export interface ViewSettings {
 export interface AppSettings {
   defaults: ViewSettings;
   clickZones: boolean;
+  /** "slide": animated (a page flip in Book view), "instant": no animation. */
   turnAnimation: "slide" | "instant";
   background: "black" | "grey";
   /** Strip column width, percent of the window width (30..100). */
@@ -60,6 +61,8 @@ export interface AppSettings {
   stripGap: number;
   autoSingleWhenPortrait: boolean;
   chromeHideMs: number;
+  /** First open of a portrait PDF: show it as a book. */
+  pdfAsBook: boolean;
 }
 
 /** Turns anything thrown by the api into a message that can be shown to the user. */

@@ -140,7 +140,8 @@ export function settingsMenu(state: ChromeState, host: ChromeHost): HTMLElement 
     set({ stripWidth: Number(width.value) });
   });
   const v = state.view;
-  const viewText = `${v.layout === "single" ? "Single" : v.layout === "double" ? "Double" : "Strip"} · ${
+  const names = { single: "Single", double: "Double", book: "Book", strip: "Strip" };
+  const viewText = `${names[v.layout]} · ${
     v.direction === "rtl" ? "right to left" : "left to right"
   } · fit ${v.fit}`;
   const saveBtn = el("button.btn.small", { text: "Save as default" });
@@ -155,9 +156,11 @@ export function settingsMenu(state: ChromeState, host: ChromeHost): HTMLElement 
     el("div.row", {}, el("span.muted", { text: viewText }), saveBtn),
     el("p.note", { text: "Changes you make while reading are kept for this comic. \"Save as default\" uses them for new comics." }),
     el("h3", { text: "Reading" }),
-    choice("Page turn", s.turnAnimation, [["slide", "Slide"], ["instant", "Instant"]], (x) => set({ turnAnimation: x })),
+    choice("Page turn", s.turnAnimation, [["slide", "Animated"], ["instant", "Instant"]], (x) => set({ turnAnimation: x })),
+    el("p.note", { text: "Animated: a slide, or a page flip in Book view." }),
     toggle("Click / tap zones turn pages", s.clickZones, (x) => set({ clickZones: x })),
     toggle("Single page when the window is narrow", s.autoSingleWhenPortrait, (x) => set({ autoSingleWhenPortrait: x })),
+    toggle("Open PDFs as a book", s.pdfAsBook, (x) => set({ pdfAsBook: x })),
     choice("Hide controls after", s.chromeHideMs, [[1000, "1 s"], [2000, "2 s"], [4000, "4 s"]], (x) => set({ chromeHideMs: x })),
     choice("Background", s.background, [["black", "Black"], ["grey", "Grey"]], (x) => set({ background: x })),
     el("h3", { text: "Strip mode" }),

@@ -1,6 +1,6 @@
 [package]
 name = "gettics-comic-manga-reader"
-version = "0.1.0"
+version = "0.2.0"
 description = "Gettic's Comic-Manga reader"
 edition = "2021"
 publish = false
@@ -36,6 +36,8 @@ sevenz-rust2 = { version = "0.25.0", default-features = false, features = ["bzip
 [patch.crates-io]
 # Patched copy so RAR cross-builds for Windows from Linux (WSL); see vendor/unrar_sys/VENDORED.md.
 unrar_sys = { path = "vendor/unrar_sys" }
+# Patched copy: the apostrophe in "Gettic's" showed as \' in the exe's file properties; see vendor/tauri-winres/VENDORED.md.
+tauri-winres = { path = "vendor/tauri-winres" }
 
 [features]
 default = ["rar"]

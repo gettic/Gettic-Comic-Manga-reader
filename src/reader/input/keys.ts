@@ -13,6 +13,7 @@ export type Command =
   | "jumpRight"
   | "layoutSingle"
   | "layoutDouble"
+  | "layoutBook"
   | "layoutStrip"
   | "toggleDirection"
   | "fitWidth"
@@ -62,6 +63,7 @@ export const BINDINGS: Binding[] = [
   { keys: ["1"], cmd: "layoutSingle", label: "1", help: "Single page" },
   { keys: ["2"], cmd: "layoutDouble", label: "2", help: "Double page" },
   { keys: ["3"], cmd: "layoutStrip", label: "3", help: "Strip (webtoon)" },
+  { keys: ["4"], cmd: "layoutBook", label: "4", help: "Book (two pages with a spine; pages flip when Page turn is Animated)" },
   { keys: ["r"], cmd: "toggleDirection", label: "R", help: "Switch left-to-right / right-to-left" },
   { keys: ["w"], cmd: "fitWidth", label: "W", help: "Fit width" },
   { keys: ["h"], cmd: "fitHeight", label: "H", help: "Fit height" },

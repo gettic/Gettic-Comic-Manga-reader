@@ -36,13 +36,23 @@ cd "$work/src/src-tauri"
 #   CPU since ~2008 (Windows 11 needs SSE4.2); this only affects the unRAR C++ code.
 export CXXFLAGS_FOR_XWIN="-D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH /clang:-maes /clang:-mssse3"
 
+# Neutral source paths in the exe (panic messages and debug info would otherwise contain
+# /home/<user>/...). Later mappings win, so the catch-all for $HOME comes first.
+# Windows-target builds only; `test` (Linux) is unchanged.
+remap="--remap-path-prefix=$HOME=/build --remap-path-prefix=$HOME/.cargo=/cargo"
+remap="$remap --remap-path-prefix=$HOME/.rustup=/rustup --remap-path-prefix=$work/src=/src"
+export RUSTFLAGS_FOR_XWIN="$remap"
+CXXFLAGS_FOR_XWIN="$CXXFLAGS_FOR_XWIN /clang:-ffile-prefix-map=$HOME=/build /clang:-ffile-prefix-map=$work/src=/src"
+CXXFLAGS_FOR_XWIN="$CXXFLAGS_FOR_XWIN /clang:-ffile-prefix-map=$HOME/.cargo=/cargo"
+CXXFLAGS_FOR_XWIN="$CXXFLAGS_FOR_XWIN /clang:-ffile-prefix-map=$HOME/.cache/cargo-xwin=/xwin"
+
 target=x86_64-pc-windows-msvc
 case "$mode" in
   check)
-    CXXFLAGS="$CXXFLAGS_FOR_XWIN" cargo xwin check --locked --target "$target"
+    RUSTFLAGS="$RUSTFLAGS_FOR_XWIN" CXXFLAGS="$CXXFLAGS_FOR_XWIN" cargo xwin check --locked --target "$target"
     ;;
   clippy)
-    CXXFLAGS="$CXXFLAGS_FOR_XWIN" cargo xwin clippy --locked --target "$target" -- -D warnings
+    RUSTFLAGS="$RUSTFLAGS_FOR_XWIN" CXXFLAGS="$CXXFLAGS_FOR_XWIN" cargo xwin clippy --locked --target "$target" -- -D warnings
     ;;
   lock)
     # After editing Cargo.toml: add the new crates to Cargo.lock (existing pins stay) and copy it back.
@@ -55,7 +65,7 @@ case "$mode" in
     ;;
   release)
     # tauri/custom-protocol = serve the bundled ../dist instead of the dev server (what `tauri build` does).
-    CXXFLAGS="$CXXFLAGS_FOR_XWIN" cargo xwin build --locked --release --target "$target" --features tauri/custom-protocol
+    RUSTFLAGS="$RUSTFLAGS_FOR_XWIN" CXXFLAGS="$CXXFLAGS_FOR_XWIN" cargo xwin build --locked --release --target "$target" --features tauri/custom-protocol
     exe="$CARGO_TARGET_DIR/$target/release/gettics-comic-manga-reader.exe"
     if [ -n "$out_dir" ]; then
       mkdir -p "$out_dir"

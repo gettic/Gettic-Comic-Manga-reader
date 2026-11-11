@@ -19,6 +19,7 @@ import { closeHelp, isHelpOpen, toggleHelp } from "./chrome/help";
 import type { ChromeHost, ChromeState } from "./chrome/host";
 import { closeMenu, isMenuOpen } from "./chrome/menus";
 import { TopBar } from "./chrome/topbar";
+import { looksLikeBook } from "./book";
 import { looksLikeWebtoon } from "./detect";
 import { attachGestures } from "./input/pointer";
 import { commandForKey, type Command } from "./input/keys";
@@ -73,6 +74,11 @@ export class Reader implements ChromeHost {
     this.cache = new PageCache((i, px) => pageUrl(comic, i, px), comic.pages.length, 16, (i) => sized[i], {
       rendered: comic.isRendered,
     });
+    if (this.detectPending && ctx.settings().pdfAsBook && looksLikeBook(sized.slice(0, 8), comic.kind)) {
+      // First open of a portrait PDF: a book (cover alone, two pages, page flip).
+      this.view = { ...this.view, layout: "book", coverAlone: true };
+      this.detectPending = false;
+    }
     if (this.detectPending && looksLikeWebtoon(sized.slice(0, 5))) {
       this.view = { ...this.view, layout: "strip" };
       this.detectPending = false;
@@ -197,6 +203,9 @@ export class Reader implements ChromeHost {
       case "layoutDouble":
         this.setView({ layout: "double" });
         break;
+      case "layoutBook":
+        this.setView({ layout: "book" });
+        break;
       case "layoutStrip":
         this.setView({ layout: "strip" });
         break;
@@ -283,7 +292,7 @@ export class Reader implements ChromeHost {
   }
 
   private effectiveDouble(): boolean {
-    if (this.view.layout !== "double") return false;
+    if (this.view.layout !== "double" && this.view.layout !== "book") return false;
     return !(this.settings().autoSingleWhenPortrait && this.stageW < this.stageH);
   }
 

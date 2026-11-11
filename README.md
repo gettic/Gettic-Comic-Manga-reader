@@ -8,7 +8,7 @@ A comic and manga reader for Windows (work in progress).
 
 - **Opens** CBZ/ZIP, CBR/RAR, CB7/7z and PDF files, a folder of images, or a single image (it opens that image's folder there).
 - **Images in folders:** jpg, png, webp, gif, avif and bmp, up to 2 subfolder levels deep.
-- **Reading modes:** single page, double page, or strip (one long column, for webtoons).
+- **Reading modes:** single page, double page, book, or strip (one long column, for webtoons). See [Book view](#book-view).
 - **Manga mode:** reads right to left. Keys, clicks, swipes and the page slider all follow the direction.
 - **Fit and zoom:** fit width, fit height, fit page or original size, plus zoom.
 - **Webtoons:** a comic with very tall pages switches to strip mode by itself the first time you open it.
@@ -18,6 +18,16 @@ A comic and manga reader for Windows (work in progress).
 - **Opening comics:** use the open buttons, drag a file onto the window, or open it from Explorer. If the app is already running, the comic opens in that window.
 
 Comics protected by a password are not supported.
+
+## Book view
+
+Pick **Book** in the Layout control, or press `4`. It works for any comic.
+
+- Two pages sit around a spine, with page edges at the sides. The cover is shown alone, like a closed book.
+- When **Page turn** in the gear menu is **Animated**, pages flip like paper. On touch, the page follows your finger. **Instant** turns the flip off.
+- In right-to-left mode, pages flip the other way.
+- In a narrow window you see one page at a time, still with the spine shading and page edges.
+- PDFs with mostly portrait pages open as a book the first time. Turn **Open PDFs as a book** off in the gear menu to stop that.
 
 ## Get it and run it
 
@@ -38,7 +48,7 @@ The main keys. Press `?` in the app for the full list.
 | Left / Right (or A / D) | Page to the left / right |
 | Space / Shift+Space | Next / previous page |
 | Home / End | First / last page |
-| 1 / 2 / 3 | Single page / double page / strip |
+| 1 / 2 / 3 / 4 | Single page / double page / strip / book |
 | R | Switch left-to-right / right-to-left |
 | W / H / P / O | Fit width / fit height / fit page / original size |
 | + / - / 0 | Zoom in / zoom out / reset zoom |
@@ -102,4 +112,5 @@ Run the exe with `--smoke-test`. It shows no window and ends with exit code 0 wh
 
 - PDF pages are turned into images with `jpeg-encoder`. This software is based in part on the work of the Independent JPEG Group.
 - RAR and CBR support uses RARLAB's unRAR source code. Its license is freeware, not open source: it may be passed on, but not used to re-create the RAR compression method. The Rust code can be built without RAR support by leaving out the default `rar` feature (`--no-default-features`).
+- A patched copy of `tauri-winres` 0.3.7 (MIT) is in `src-tauri/vendor/tauri-winres`. It fixes how the apostrophe in the app's name shows in the exe's file properties. See its `VENDORED.md`.
 - All other libraries are under the MIT or Apache-2.0 license.

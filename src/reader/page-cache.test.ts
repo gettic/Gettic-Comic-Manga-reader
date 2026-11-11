@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { pageUrl } from "../api/comics";
 import type { ComicInfo } from "../api/types";
-import { needsSharper, renderWidth } from "./page-cache";
+import { needsSharper, renderWidth, startWidth } from "./page-cache";
 
 describe("PDF render widths", () => {
   it("asks for the shown width x devicePixelRatio, rounded up to 256", () => {
@@ -39,5 +39,17 @@ describe("PDF render widths", () => {
     };
     expect(pageUrl(base, 3, 985.5)).toBe("http://comic.localhost/c1/3?w=1024");
     expect(pageUrl({ ...base, isRendered: false, kind: "zip" }, 3, 985.5)).toBe("http://comic.localhost/c1/3");
+  });
+});
+
+describe("preload width (Book view halves)", () => {
+  it("preloads at the layout's shown width, not an older bigger one", () => {
+    // A Book half 576 css px wide at dpr 1 -> 768, even after a zoomed page asked for 2048.
+    expect(startWidth(0, renderWidth(576, 1, 1), 2048)).toBe(768);
+  });
+  it("an explicit width wins; nothing known falls back to the last, then 1792", () => {
+    expect(startWidth(1280, 768, 2048)).toBe(1280);
+    expect(startWidth(0, 0, 1024)).toBe(1024);
+    expect(startWidth(0, 0, 0)).toBe(1792);
   });
 });

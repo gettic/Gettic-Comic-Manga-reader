@@ -66,6 +66,7 @@ export class StartScreen {
       const parts = [`Page ${r.page + 1} of ${r.pageCount}`];
       if (r.direction === "rtl") parts.push("Right to left");
       if (r.layout === "double") parts.push("Double page");
+      if (r.layout === "book") parts.push("Book");
       if (r.layout === "strip") parts.push("Strip");
       const pct = r.pageCount > 1 ? Math.round((r.page / (r.pageCount - 1)) * 100) : 100;
       const bar = el("div.progress", {}, el("i"));

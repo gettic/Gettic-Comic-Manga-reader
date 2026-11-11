@@ -64,6 +64,7 @@ export class TopBar {
         [
           ["single", icons.single, "Single", run("layoutSingle")],
           ["double", icons.double, "Double", run("layoutDouble")],
+          ["book", icons.book, "Book", run("layoutBook")],
           ["strip", icons.strip, "Strip", run("layoutStrip")],
         ],
         this.layoutBtns,
@@ -102,6 +103,7 @@ export class TopBar {
     }
     // Double chosen but shown as single (narrow window): mark it as "auto".
     this.layoutBtns.double.classList.toggle("auto", s.view.layout === "double" && !s.double);
+    this.layoutBtns.book.classList.toggle("auto", s.view.layout === "book" && !s.double);
     for (const [k, b] of Object.entries(this.dirBtns)) {
       const on = k === s.view.direction;
       b.classList.toggle("on", on);

@@ -41,7 +41,11 @@ export function attachGestures(el: HTMLElement, h: GestureHandlers): () => void 
     if (e.button !== 0 && e.pointerType === "mouse") return;
     if ((e.target as HTMLElement).closest(".no-gesture")) return;
     rect = el.getBoundingClientRect();
-    el.setPointerCapture?.(e.pointerId);
+    try {
+      el.setPointerCapture?.(e.pointerId);
+    } catch {
+      /* pointer already gone: still track it */
+    }
     const p = local(e);
     pts.set(e.pointerId, p);
     if (pts.size === 1) {

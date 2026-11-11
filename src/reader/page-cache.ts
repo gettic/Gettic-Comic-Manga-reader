@@ -27,6 +27,14 @@ export function needsSharper(loadedPx: number, wantedPx: number): boolean {
   return loadedPx > 0 && pdfWidthStep(wantedPx) > loadedPx;
 }
 
+/**
+ * Width a new PDF render is asked at: the width it was asked for, else the width pages are shown at
+ * in the current layout (so preloads match, e.g. a Book half), else the last one asked for.
+ */
+export function startWidth(wanted: number, layoutPx: number, lastPx: number): number {
+  return wanted || layoutPx || lastPx || pdfWidthStep(1600);
+}
+
 export interface CacheOptions {
   /** PDF: page URLs take a width; sizes come from the core, not from the rendered image. */
   rendered: boolean;
@@ -40,6 +48,7 @@ export class PageCache {
   private sizes = new Map<number, PageSize>();
   private dead = false;
   private lastPx = 0;
+  private layoutPx = 0;
   private sizeListeners = new Set<(index: number, size: PageSize) => void>();
 
   /** Calls `fn` whenever a page's real size becomes known. Returns the unsubscribe function. */
@@ -92,7 +101,7 @@ export class PageCache {
       if (want && have.ready && !have.broken && needsSharper(have.px, want)) this.sharpen(i, have, want);
       return have.promise;
     }
-    const px = this.opts.rendered ? want || this.lastPx || pdfWidthStep(1600) : 0;
+    const px = this.opts.rendered ? startWidth(want, this.layoutPx, this.lastPx) : 0;
     const img = this.newImage(low);
     const entry = { img, ready: false, broken: false, px, upgrading: 0 } as Entry;
     entry.promise = new Promise<HTMLImageElement>((resolve) => {
@@ -120,6 +129,11 @@ export class PageCache {
     this.entries.set(i, entry);
     this.evict();
     return entry.promise;
+  }
+
+  /** The device-px width pages are shown at now (rendered comics): preloads are asked at this width. */
+  setShownWidth(devicePx: number): void {
+    this.layoutPx = devicePx > 0 ? pdfWidthStep(devicePx) : 0;
   }
 
   /** Replaces the preload list (in priority order). Loaded one at a time. */

@@ -18,9 +18,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
   stripGap: 0,
   autoSingleWhenPortrait: true,
   chromeHideMs: 2000,
+  pdfAsBook: true,
 };
 
-const LAYOUTS: Layout[] = ["single", "double", "strip"];
+const LAYOUTS: Layout[] = ["single", "double", "book", "strip"];
 const DIRS: Direction[] = ["ltr", "rtl"];
 const FITS: Fit[] = ["width", "height", "page", "original"];
 
@@ -64,5 +65,6 @@ export function sanitizeSettings(v: unknown): AppSettings {
     stripGap: Math.round(num(o.stripGap, d.stripGap, 0, 64)),
     autoSingleWhenPortrait: bool(o.autoSingleWhenPortrait, d.autoSingleWhenPortrait),
     chromeHideMs: Math.round(num(o.chromeHideMs, d.chromeHideMs, 500, 10000)),
+    pdfAsBook: bool(o.pdfAsBook, d.pdfAsBook),
   };
 }

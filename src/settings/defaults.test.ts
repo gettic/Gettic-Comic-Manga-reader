@@ -30,6 +30,8 @@ describe("settings", () => {
     const base = { ...DEFAULT_VIEW, layout: "double" as const };
     expect(sanitizeView({ fit: "width", layout: "nope" }, base)).toEqual({ ...base, fit: "width" });
     expect(sanitizeView(undefined, base)).toEqual(base);
+    expect(sanitizeView({ layout: "book" }, base).layout).toBe("book");
+    expect(sanitizeSettings(null).pdfAsBook).toBe(true);
   });
 });
 
