@@ -20,3 +20,15 @@ Thumbs.db
 *.keystore
 credentials*.json
 .dev.vars
+*.p8
+*.jks
+
+# Tauri / TypeScript / tests
+.tauri/
+*.tsbuildinfo
+coverage/
+test-data/
+src-tauri/test-data/
+
+# Old build script blocked by antivirus; no longer used (to be recycled)
+scripts/build-exe.ps1
