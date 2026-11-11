@@ -6,9 +6,8 @@
 //! that does the work, then deletes the temp folder once the child and its WebView2
 //! processes have released it (WebView2 keeps its data folder locked until the app exits).
 //!
-//! For now the "comic" is a folder of two 1x1 PNG pages, read back and checked.
-//! Later (reader-core): generate a tiny .cbz and open/decode it through reader-core;
-//! (panels): run panel detection on one page.
+//! The comic is a generated 3-page .cbz, opened and served through the reader core.
+//! Later (panels): run panel detection on one page.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -18,20 +17,14 @@ use std::time::{Duration, Instant};
 use tauri::webview::PageLoadEvent;
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 
+use crate::protocol::Reply;
+use crate::reader::session::Session;
+use crate::reader::testdata::{page_png, write_zip};
+
 /// Whole smoke test, including cleanup.
 const TIMEOUT: Duration = Duration::from_secs(30);
 /// The child gets a bit less, so cleanup still fits in the 30 s.
 const CHILD_TIMEOUT: Duration = Duration::from_secs(25);
-
-/// Smallest valid PNG: 1x1 pixel, greyscale.
-const TINY_PNG: &[u8] = &[
-    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
-    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x00, 0x00, 0x00, 0x00, 0x3A, 0x7E, 0x9B,
-    0x55, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x60, 0x00, 0x00, 0x00,
-    0x02, 0x00, 0x01, 0x48, 0xAF, 0xA4, 0x71, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE,
-    0x42, 0x60, 0x82,
-];
-const PNG_SIGNATURE: &[u8] = &[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A];
 
 static EXIT_CODE: AtomicI32 = AtomicI32::new(1);
 
@@ -104,7 +97,7 @@ pub fn run_as_child(root: &Path) {
 
 fn run_inner(root: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let comic = make_test_comic(root)?;
-    check_test_comic(&comic)?;
+    check_test_comic(root, &comic)?;
 
     let webview_data: PathBuf = root.join("webview");
     let app = tauri::Builder::default()
@@ -129,45 +122,34 @@ fn run_inner(root: &Path) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-/// Writes a tiny two-page "comic" folder. Placeholder until reader-core can build a .cbz.
+/// Writes a tiny three-page .cbz (pages named so natural sort matters).
 fn make_test_comic(root: &Path) -> std::io::Result<PathBuf> {
-    let comic = root.join("comic");
-    std::fs::create_dir_all(&comic)?;
-    for name in ["001.png", "002.png"] {
-        std::fs::write(comic.join(name), TINY_PNG)?;
-    }
+    std::fs::create_dir_all(root)?;
+    let comic = root.join("smoke.cbz");
+    write_zip(&comic, &[("p10.png", page_png(10)), ("p2.png", page_png(2)), ("p1.png", page_png(1))])?;
     Ok(comic)
 }
 
-fn check_test_comic(comic: &Path) -> Result<(), String> {
-    let mut pages: Vec<_> = std::fs::read_dir(comic)
-        .map_err(|e| e.to_string())?
-        .filter_map(|e| e.ok().map(|e| e.path()))
-        .collect();
-    pages.sort();
-    if pages.len() != 2 {
-        return Err(format!("expected 2 pages, found {}", pages.len()));
+/// Opens the comic through the reader core and serves every page through the page protocol
+/// code, with the data store in `<root>/data` (never the real data folder).
+fn check_test_comic(root: &Path, comic: &Path) -> Result<(), String> {
+    let session = Session::new(&root.join("data"), crate::protocol::URL_ROOT);
+    let info = session.open(comic).map_err(|e| e.to_string())?;
+    let names: Vec<&str> = info.pages.iter().map(|p| p.name.as_str()).collect();
+    if names != ["p1.png", "p2.png", "p10.png"] {
+        return Err(format!("wrong page order: {names:?}"));
     }
-    for p in &pages {
-        let bytes = std::fs::read(p).map_err(|e| e.to_string())?;
-        if !bytes.starts_with(PNG_SIGNATURE) {
-            return Err(format!("{} is not a PNG", p.display()));
+    let id = info.id.trim_start_matches('c');
+    for i in 0..info.pages.len() {
+        match crate::protocol::serve(&session, &format!("/c{id}/{i}"), None) {
+            Reply::Page(p) if p.mime == "image/png" => {}
+            Reply::Page(p) => return Err(format!("page {i}: unexpected type {}", p.mime)),
+            Reply::Error { message, .. } => return Err(format!("page {i}: {message}")),
         }
     }
+    session.set_progress(&info.id, 1).map_err(|e| e.to_string())?;
+    session.close(&info.id).map_err(|e| e.to_string())?;
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_comic_is_written_and_valid() {
-        let root = std::env::temp_dir().join(format!("gcmr-unittest-{}", std::process::id()));
-        let comic = make_test_comic(&root).unwrap();
-        assert!(check_test_comic(&comic).is_ok());
-        std::fs::remove_dir_all(&root).unwrap();
-    }
 }
 
 /// WebView2's helper processes may hold the data folder for a moment after the child exits,
@@ -181,5 +163,19 @@ fn cleanup(root: &Path, start: Instant) -> bool {
             return false;
         }
         std::thread::sleep(Duration::from_millis(200));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_comic_is_written_and_valid() {
+        let root = std::env::temp_dir().join(format!("gcmr-unittest-{}", std::process::id()));
+        let comic = make_test_comic(&root).unwrap();
+        check_test_comic(&root, &comic).unwrap();
+        assert!(root.join("data").join("progress.json").exists());
+        std::fs::remove_dir_all(&root).unwrap();
     }
 }

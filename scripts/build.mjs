@@ -6,6 +6,7 @@
 //   node scripts/build.mjs check               npm run rust:check   (Windows target)
 //   node scripts/build.mjs clippy              npm run rust:clippy  (Windows target, -D warnings)
 //   node scripts/build.mjs test                npm run rust:test    (unit tests, run in Linux)
+//   node scripts/build.mjs lock                npm run rust:lock    (after editing Cargo.toml: update Cargo.lock)
 //
 // Output: src-tauri\target\release\gettics-comic-manga-reader.exe. Exit code 0 = all passed.
 
@@ -15,7 +16,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const DISTRO = "Ubuntu";
-const MODES = ["release", "check", "clippy", "test"];
+const MODES = ["release", "check", "clippy", "test", "lock"];
 
 const codeDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 const releaseDir = join(codeDir, "src-tauri", "target", "release");

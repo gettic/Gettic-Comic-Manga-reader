@@ -1,0 +1,5 @@
+version.rar, solid.rar, crypted.rar: copied unchanged from the `unrar` crate 0.5.8 test data
+(data/ folder, https://github.com/muja/unrar.rs, MIT OR Apache-2.0). RAR archives cannot be
+generated without the proprietary WinRAR, so these tiny files are the RAR test fixtures.
+version.rar: one file "VERSION" = "unrar-0.4.0". solid.rar: solid archive. crypted.rar:
+".gitignore", encrypted with password "unrar".

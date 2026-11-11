@@ -1,0 +1,378 @@
+/* Reader. The stage always fills the window; the chrome floats over it and only fades/slides
+   with opacity + transform, so showing or hiding it never moves the page. */
+.reader {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.reader.bg-grey {
+  background: var(--bg-grey);
+}
+
+.stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.stage.is-strip {
+  touch-action: pan-y;
+}
+
+/* ---------- paged (single / double) ---------- */
+.paged,
+.ptrack {
+  position: absolute;
+  inset: 0;
+}
+
+.ptrack {
+  will-change: transform;
+}
+
+.slot {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  contain: strict;
+}
+
+.spread {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.spread.rtl {
+  flex-direction: row-reverse;
+}
+
+.pg {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+}
+
+.pg img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: fade 0.15s ease-out;
+}
+
+.broken {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  padding: 16px;
+  text-align: center;
+}
+
+.broken .icon,
+.broken .icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+/* ---------- strip ---------- */
+.strip {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overflow-anchor: none;
+  scrollbar-width: none;
+}
+
+.strip::-webkit-scrollbar {
+  display: none;
+}
+
+.strip-col {
+  position: relative;
+  margin: 0 auto;
+}
+
+.strip-page {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  contain: strict;
+}
+
+.strip-page img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.strip-rail {
+  position: absolute;
+  right: 8px;
+  top: 16px;
+  bottom: 16px;
+  width: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.07);
+  pointer-events: none;
+}
+
+.strip-thumb {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 2px;
+  background: rgba(242, 165, 65, 0.75);
+}
+
+/* ---------- chrome ---------- */
+.chrome {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.reader.chrome-hidden .chrome {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.reader.chrome-hidden .topbar {
+  transform: translateY(-10px);
+}
+
+.reader.chrome-hidden .bottombar {
+  transform: translate(-50%, 10px);
+}
+
+.topbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  background: var(--surface);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+  z-index: 10;
+}
+
+.title {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+.title b,
+.title span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.title b {
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.title span {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.spacer.small {
+  flex: 0.15;
+}
+
+.dropdown {
+  height: 36px;
+  padding: 0 10px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 12.5px;
+  white-space: nowrap;
+  flex: none;
+}
+
+.dropdown:hover,
+.dropdown.active {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.dropdown[hidden] {
+  display: none;
+}
+
+.icon.chev,
+.icon.chev svg {
+  width: 12px;
+  height: 12px;
+}
+
+.zoom {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.05);
+  flex: none;
+}
+
+.zoom .icon-btn {
+  width: 28px;
+  height: 28px;
+}
+
+.zoom-reset {
+  width: 46px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+}
+
+/* Narrow windows: icons only. */
+@media (max-width: 1100px) {
+  .seg .lbl {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .dropdown .lbl,
+  .zoom,
+  .title span {
+    display: none;
+  }
+}
+
+.bottombar {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  width: min(760px, calc(100% - 24px));
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px;
+  background: var(--surface);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  z-index: 10;
+}
+
+.slider {
+  position: relative;
+  flex: 1;
+  height: 32px;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.slider .track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 14px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.slider .fill {
+  position: absolute;
+  top: 14px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.slider .thumb {
+  position: absolute;
+  top: 8px;
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(242, 165, 65, 0.22);
+}
+
+.slider .bubble {
+  position: absolute;
+  bottom: 38px;
+  transform: translateX(-50%);
+  background: var(--surface-solid);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 5px 9px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s;
+}
+
+.slider .bubble.show {
+  opacity: 1;
+}
+
+.pagenum {
+  min-width: 78px;
+  height: 32px;
+  border-radius: 8px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pagenum:hover,
+.pagenum.active {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.pagenum b {
+  font-weight: 600;
+}
+
+.pagenum span {
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chrome,
+  .pg img {
+    transition: none;
+    animation: none;
+  }
+}

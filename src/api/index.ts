@@ -1,10 +1,8 @@
-// The only module allowed to import @tauri-apps/*. Everything else imports from here,
-// so the plain web build still works without Tauri.
+// The UI's only door to the Rust side. Only files in src\api import @tauri-apps/*, so the
+// plain web build still works without Tauri (it then uses the demo backend in demo.ts).
 
-export const isTauri = (): boolean => "__TAURI_INTERNALS__" in globalThis;
-
-export async function invoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
-  if (!isTauri()) throw new Error(`"${cmd}" needs the desktop app`);
-  const { invoke } = await import("@tauri-apps/api/core");
-  return invoke<T>(cmd, args);
-}
+export { isTauri, invoke } from "./core";
+export * from "./types";
+export * from "./comics";
+export * from "./settings";
+export * from "./window";

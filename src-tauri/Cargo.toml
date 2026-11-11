@@ -1,6 +1,6 @@
 [package]
 name = "gettics-comic-manga-reader"
-version = "0.0.1"
+version = "0.1.0"
 description = "Gettic's Comic-Manga reader"
 edition = "2021"
 publish = false
@@ -16,13 +16,85 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = [] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+tauri-plugin-dialog = "2.8.4"
+tauri-plugin-single-instance = "2.5.5"
+# Comic archives
+# zip: read deflate only (zlib-rs backend, no zopfli compressor)
+zip = { version = "9.5.1", default-features = false, features = ["deflate-flate2-zlib-rs"] }
+# 7z: LZMA/LZMA2 always; bzip2 + PPMd are used by real 7z files. No AES (we never decrypt;
+# encrypted entries are still detected from the archive headers), no compressor.
+sevenz-rust2 = { version = "0.25.0", default-features = false, features = ["bzip2", "ppmd"] }
+unrar = { version = "0.5.8", optional = true }
+# PDF pages: render with hayro, encode as JPEG
+hayro = "0.9.0"
+jpeg-encoder = "0.7.1"
+
+[dev-dependencies]
+# Test fixtures: writing 7z archives (zip can already write)
+sevenz-rust2 = { version = "0.25.0", default-features = false, features = ["bzip2", "ppmd", "compress"] }
+
+[patch.crates-io]
+# Patched copy so RAR cross-builds for Windows from Linux (WSL); see vendor/unrar_sys/VENDORED.md.
+unrar_sys = { path = "vendor/unrar_sys" }
+
+[features]
+default = ["rar"]
+# RAR/CBR support. Bundles the C++ unRAR source (unRAR license: freeware, not OSI).
+# Build without it: --no-default-features
+rar = ["dep:unrar"]
 
 [profile.release]
-opt-level = "s"
+# Size first ("z"); the page decode / PDF render hot paths below stay at full speed (3).
+opt-level = "z"
 lto = true
 codegen-units = 1
-panic = "abort"
+panic = "unwind"       # reader-core catches panics in page decoding (catch_unwind), so no "abort"
 strip = true
+
+# Hot paths at full speed: PDF parse/render (hayro + vello + fonts), JPEG/PNG/JBIG2/JPEG2000 decode,
+# colour conversion, JPEG encode of PDF pages, inflate/LZMA/CRC for archive reads.
+[profile.release.package.hayro-syntax]
+opt-level = 3
+[profile.release.package.hayro-interpret]
+opt-level = 3
+[profile.release.package.hayro-jbig2]
+opt-level = 3
+[profile.release.package.hayro-jpeg2000]
+opt-level = 3
+[profile.release.package.hayro-ccitt]
+opt-level = 3
+[profile.release.package.vello_cpu]
+opt-level = 3
+[profile.release.package.vello_common]
+opt-level = 3
+[profile.release.package.fearless_simd]
+opt-level = 3
+[profile.release.package.kurbo]
+opt-level = 3
+[profile.release.package.skrifa]
+opt-level = 3
+[profile.release.package.read-fonts]
+opt-level = 3
+[profile.release.package.zune-jpeg]
+opt-level = 3
+[profile.release.package.png]
+opt-level = 3
+[profile.release.package.fdeflate]
+opt-level = 3
+[profile.release.package.moxcms]
+opt-level = 3
+[profile.release.package.pxfm]
+opt-level = 3
+[profile.release.package.jpeg-encoder]
+opt-level = 3
+[profile.release.package.zlib-rs]
+opt-level = 3
+[profile.release.package.simd-adler32]
+opt-level = 3
+[profile.release.package.crc32fast]
+opt-level = 3
+[profile.release.package.lzma-rust2]
+opt-level = 3
 
 [profile.dev.package."*"]
 opt-level = 2
